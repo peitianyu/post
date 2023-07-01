@@ -1,0 +1,31 @@
+eskf学习
+参考网站:
+	https://blog.csdn.net/weixin_43662553/article/details/128113814?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522168775054916782425154643%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=168775054916782425154643&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-2-128113814-null-null.142^v88^insert_down38v5,239^v2^insert_chatgpt&utm_term=eskf&spm=1018.2226.3001.4187
+	https://blog.csdn.net/u011341856/article/details/114262451
+	https://blog.csdn.net/qq_38650944/article/details/123580686
+
+参考代码:
+	https://github.com/zm0612/eskf-gps-imu-fusion
+	https://github.com/Shelfcol/gps_imu_fusion
+	https://github.com/je310/ESKF	
+
+优点:
+	1. 由于eskf采用最小化表示, 相对于传统ekf需要使用(4维), eskf只需要三维变量来表示增量, 避免奇异性影响
+	2. eskf总在原点附近, 距离奇异点较远, 也不会由于离工作点太远导致的线性化近似不够问题
+	3. eskf由于状态量为小量, 其二阶变量相对可以忽略. 同时雅可比矩阵一般在小量情况下会非常简单, 甚至可以用单位矩阵代替
+	4. 误差状态的运动学也与原状态的变量来的较小, 因为我们可以把大量的更新部分放在原状态变量中
+
+流程:
+	由于eskf主要用于惯导模型中, 因此其预测模型主要为imu模型
+	1. 预测步:
+		1. 根据运动学模型预测名义状态变量
+		2. 根据误差模型计算误差变量
+		3. 根据imu的噪声与零偏, 给出imu状态的高斯分布描述
+	2. 更新步:
+		1. 根据名义状态变量, 计算其他传感器观测与其误差
+		2. 并给出传感其误差高斯分布
+		3. 更新误差变量
+		4. 更新名义状态变量
+		5. 将误差变量置零
+
+	
