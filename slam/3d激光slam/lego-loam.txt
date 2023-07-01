@@ -1,0 +1,47 @@
+lego_loam学习
+
+参考文章:
+	https://blog.csdn.net/liaolizhou/article/details/122089517?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522168819038516800192273131%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=168819038516800192273131&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-4-122089517-null-null.142^v88^insert_down38v5,239^v2^insert_chatgpt&utm_term=lego-loam&spm=1018.2226.3001.4187
+	https://blog.csdn.net/Yong_Qi2015/article/details/118165768?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522168819124716800211570498%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=168819124716800211570498&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-1-118165768-null-null.142^v88^insert_down38v5,239^v2^insert_chatgpt&utm_term=lego_loam%E7%82%B9%E4%BA%91%E5%88%86%E5%89%B2&spm=1018.2226.3001.4187
+代码库:
+	https://github.com/RobustFieldAutonomyLab/LeGO-LOAM
+算法流程:
+	1. 点云分割[cloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)]
+		1. 根据点云图构建深度图的概念, 例如16线1800分辨率激光, 则有16*1800的小方格[projectPointCloud()]
+		2. 根据深度图, 通过同一列点云, 很方便的分辨出地面点(一般判断小于10°), 一般会通过雷达安装位置提供先验, 避免出现误检测[groundRemoval()]
+		3. 基于图像分割, 将距离图像进行聚类, 斌提取出不能聚类的点(低于30个的类), 以提升提取精度 [cloudSegmentation()]
+			0. 添加标记 [labelComponents(i, j)]
+			1. 使用bfs(深度优先遍历)递归查找, 从(0, 0)开始, 遍历前后左右四个点, 如果相对角度大于60°, 则认为同一点云集. 删除小于30个的点云集合
+			2. 相邻两点连线小于60°, 则不是一类. 主要考虑深度与偏移, 也就是深度变差大, 偏移小的两个点则认为不是一类
+	2. 特征提取: 根据range_image进行特征提取 [runFeatureAssociation()]
+		1. 进行点云畸变矫正 [adjustDistortion()]
+		2. 计算平滑度排序, 平滑认为面特征, 不平滑认为线特征
+			1. 计算光滑度[calculateSmoothness()]
+			2. 标记不可作为特征的点[markOccludedPoints()]
+			3. 提取特征[extractFeatures()]
+				1. 避免特征过于集中, 按range_image平均分成6个sub_image
+				2. 每个sub_image中选出大于阈值的n个线特征, 且点不是地面点
+				3. 每个sub_image中选出小于阈值的n个面特征, 且点为地面点
+				4. 对地面点进行降采样
+	3. 激光里程: 根据特征点云, 计算两帧之间位姿变换
+		1. 通过imu更新初始估计 [updateInitialGuess()]
+		2. 两步LM优化获得坐标变换矩阵
+			1. 通过面特征优化获得(t_z, theta_roll, theta_pitch) [findCorrespondingSurfFeatures()]
+			2. 通过线特征优化获得(t_x, t_y, theta_yaw) [findCorrespondingCornerFeatures()]
+	4. 点云地图: 输入激光里程计数据与点云信息, 优化并将点云信息转化到全局坐标
+		1. 点云投影到世界坐标系
+		2. 将当前坐标前后左右50m范围内的点作为子图用scantomap匹配
+	4. 后端优化并输出点云
+		1. 开启回环检测时, 通过当前位置, 使用kdtree构建一定距离内点云, 其时间与当前时间大于(30s)则认为回环 [detectLoopClosure()]
+		2. 使用icp匹配后, 加入回环因子 [performLoopClosure()]
+		3. scan2map优化: 将当前坐标前后左右50m范围内的点作为子图用scantomap匹配[scan2MapOptimization()]
+		4. 添加位姿因子, 进行因子图优化[saveKeyFramesAndFactor();]
+		5. 修正pose [correctPoses()]
+
+
+lego_loam思想:
+	1. 对于雷达安装需要水平或者安装角度已知情况
+	2. 存在地面都是草坪的情况, 若使用loam可能造成边特征在草坪上的情况
+	3. LM两次优化(原因是, 对于地面点而言tx, ty, theta_yaw是不可观测的), 这一点同时也降低了计算量
+	4. lego_loam也引入了图优化的概念, 让建图变得更加完整
+

@@ -1,0 +1,32 @@
+lio_sam学习:
+代码库:
+	https://github.com/TixiaoShan/LIO-SAM
+算法流程:
+	1. 前端预处理
+		1. 点云去畸变
+			通过imu去畸变, 主要是对角度去畸变
+		2. 点云特征提取
+			1. 计算平滑度[calculateSmoothness]
+			2. 标记遮挡点[markOccludedPoints]
+			3. 提取特征 [extractFeatures]
+				1. 根据角度分成6份
+				2. 根据阈值提取边特征, 取前20的点为边缘点
+				3. 根据阈值提取面特征
+		3. imu预积分 [odometryHandler]
+			1. 使用gtsam添加预积分因子
+	2. 前端里程计
+		1. 激光里程计(scan2map) [scan2MapOptimization]
+			1. 边优化 [cornerOptimization]
+			2. 面优化 [surfOptimization]
+		2. 回环检测
+			1. 回环检测 [detectLoopClosureExternal]
+			2. icp匹配添加回环因子 [performLoopClosure]
+	3. 后端优化
+		1. 添加imu预积分因子
+		2. 添加回环因子
+		3. 添加激光里程因子
+		4. 添加gps因子
+
+lio_sam特点
+	1. 更类似于loam, 直接匹配
+	2. 采用gtsam建因子图优化
