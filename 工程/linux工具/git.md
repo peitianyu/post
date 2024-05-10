@@ -66,15 +66,10 @@ git remote prune origin
 
 ```shell
 * 查看分支：git branch
-
 * 创建分支：git branch <name>
-
 * 切换分支：git checkout <name>
-
 * 创建+切换分支：git checkout -b <name>
-
 * 合并某分支到当前分支：git merge <name>
-
 * 删除分支：git branch -d <name>
 ```
 
@@ -90,4 +85,12 @@ wget https://ghproxy.com/https://raw.githubusercontent.com/stilleshan/ServerStat
 curl -O https://ghproxy.com/https://github.com/stilleshan/ServerStatus/archive/master.zip
 curl -O https://ghproxy.com/https://raw.githubusercontent.com/stilleshan/ServerStatus/master/Dockerfile
 ```
-
+### 基础使用
+```shell
+## 新建分支并切换
+git branch <branch_name>
+git checkout <branch_name>
+git add .
+git commit -m "commit message"
+git push origin <branch_name>
+```

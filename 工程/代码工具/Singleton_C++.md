@@ -29,15 +29,10 @@ public:
   Singleton(const Singleton&) = delete;
   Singleton& operator=(const Singleton&) = delete;
   Singleton():m_pInstance(nullptr){}
-  virtual ~Singleton(){
-    delete m_pInstance;
-  }
-  T* getInstance()
-  {
-    if(m_pInstance == nullptr)
-    {
-      m_pInstance = new T();
-    }
+
+  virtual ~Singleton(){ delete m_pInstance; }
+  T* GetInstance() {
+    if(m_pInstance == nullptr) m_pInstance = new T();
     return m_pInstance;
   }
 private:
@@ -47,10 +42,10 @@ private:
 class A
 {
    public:
-     static A* getInstance()
+     static A* GetInstance()
      {
        static Singleton<A> singleton;
-       return singleton.getInstance();
+       return singleton.GetInstance();
      }
      void test()
      {
@@ -60,7 +55,7 @@ class A
 
 int main()
 {
-  A* a = A::getInstance();
+  A* a = A::GetInstance();
   a->test();
   return 0;
 }

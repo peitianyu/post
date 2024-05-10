@@ -22,3 +22,11 @@ adb pull 下机文件 本机文件夹
 md5sum 文件 (对比文件是否相同)
 ```
 
+# 案例
+```
+adb connect 192.168.10.14
+adb shell
+adb pull <remote> <local>
+adb push <local> <remote>
+```
+
