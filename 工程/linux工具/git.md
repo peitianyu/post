@@ -94,3 +94,14 @@ git add .
 git commit -m "commit message"
 git push origin <branch_name>
 ```
+
+### Git报错： Failed to connect to github.com port 443 解决方案
+[参考网址](https://blog.csdn.net/zpf1813763637/article/details/128340109)
+
+```
+git config --global http.proxy socks5 127.0.0.1:7890
+git config --global https.proxy socks5 127.0.0.1:7890
+
+git config --global http.proxy 127.0.0.1:7890
+git config --global https.proxy 127.0.0.1:7890
+```
