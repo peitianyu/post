@@ -117,3 +117,18 @@ https://github.com/microsoft/Terminal
 
 使用Visual Studio打开构建运行
 
+## wsl1使用串口
+参考网址:
+  https://blog.csdn.net/toopoo/article/details/89237614
+```
+  Windows10的串口，在WSL中也可以直接使用，其对应关系就是
+  COMx对应WSL的/dev/ttySx，例如COM4对应WSL的/dev/ttyS4。
+
+  有了这个对应关系，在WSL中使用minicom就很方便了，例如：
+  minicom -D /dev/ttyS4 -b 115200
+  如果需要保存log到文件并在文件名中添加创建时间，可以使用如下命令：
+  minicom -D /dev/ttyS4 -b 115200 -c on -C minicom-log-$(date +%Y-%m-%d_%H_%M_%S).txt
+  如果使用默认端口和波特率那就是
+  minicom -c on -C minicom-log-$(date +%Y-%m-%d_%H_%M_%S).txt
+```
+
